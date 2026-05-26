@@ -2,217 +2,221 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analar Günü - Anam Üçün</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VACEGPT -Beta</title>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
     <style>
-        body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #fce4ec; /* Açıq çəhrayı fon */
-    color: #333;
-    line-height: 1.6;
-}
+        :root { --sidebar-bg: #f9f9f9; --border: #e5e5e5; --gpt-green: #19c37d; --user-blue: #5436da; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { display: flex; height: 100vh; background: white; color: #1f1f1f; overflow: hidden; }
 
-.container {
-    max-width: 900px;
-    margin: 30px auto;
-    background-color: #fff;
-    border-radius: 15px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    padding: 30px;
-}
+        /* Sidebar & Navigation */
+        .sidebar { 
+            width: 260px; background: var(--sidebar-bg); border-right: 1px solid var(--border); 
+            padding: 15px; display: flex; flex-direction: column; z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+        .menu-toggle { display: none; position: absolute; top: 15px; left: 15px; z-index: 1001; background: white; border: 1px solid var(--border); padding: 8px; border-radius: 8px; cursor: pointer; }
+        .new-chat { background: white; border: 1px solid var(--border); padding: 12px; border-radius: 10px; cursor: pointer; font-weight: 600; margin-top: 40px; width: 100%; }
+        .history { flex: 1; overflow-y: auto; margin-top: 20px; }
+        .history-item { padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px; margin-bottom: 5px; background: white; border: 1px solid var(--border); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-header {
-    text-align: center;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #ff80ab; /* Çəhrayı xətt */
-    margin-bottom: 30px;
-}
+        /* User Profile Section */
+        .user-section { border-top: 1px solid var(--border); padding-top: 15px; margin-top: 10px; }
+        .login-btn { background: #4285F4; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .profile-info { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+        .profile-info img { width: 32px; height: 32px; border-radius: 50%; }
 
-header h1 {
-    color: #e91e63; /* Tünd çəhrayı rəng */
-    font-size: 3em;
-    margin-bottom: 10px;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-}
+        /* Main Area */
+        .main { flex: 1; display: flex; flex-direction: column; position: relative; width: 100%; }
+        #chat-window { flex: 1; overflow-y: auto; padding: 60px 15% 120px 15%; display: none; flex-direction: column; }
+        #start-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
 
-header h2 {
-    color: #c2185b; /* Bir az daha tünd çəhrayı */
-    font-size: 1.5em;
-    font-weight: normal;
-}
+        /* Messages */
+        .msg { display: flex; gap: 12px; margin-bottom: 30px; width: 100%; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; }
+        .u-av { background: var(--user-blue); } .b-av { background: var(--gpt-green); }
+        .txt { font-size: 15px; line-height: 1.6; flex: 1; word-break: break-word; }
 
-.hero {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 25px;
-    margin-bottom: 40px;
-}
+        /* Upgrade Card */
+        .upgrade-card { 
+            margin-top: 15px; padding: 15px; border-radius: 12px; color: white; 
+            background: linear-gradient(135deg, #6e8efb, #a777e3); box-shadow: 0 4px 12px rgba(110,142,251,0.3);
+        }
+        .upgrade-btn { margin-top: 10px; background: white; color: #6e8efb; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; }
 
-.image-placeholder {
-    width: 250px;
-    height: 250px;
-    border-radius: 50%; /* Dairəvi şəkil */
-    overflow: hidden;
-    border: 5px solid #ff80ab; /* Çəhrayı kənar */
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-}
+        /* Input area */
+        .input-area { position: absolute; bottom: 0; width: 100%; padding: 20px; background: white; }
+        .input-box { background: #f4f4f4; border: 1px solid var(--border); border-radius: 24px; display: flex; align-items: center; padding: 5px 15px; max-width: 750px; margin: 0 auto; }
+        input { flex: 1; background: transparent; border: none; outline: none; font-size: 16px; padding: 12px 5px; }
+        .send-btn { background: black; color: white; width: 35px; height: 35px; border-radius: 50%; border: none; cursor: pointer; font-size: 18px; }
 
-.image-placeholder img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Şəklin içini doldurur */
-    display: block;
-}
-
-.hero p {
-    font-size: 1.1em;
-    text-align: center;
-    color: #555;
-    max-width: 700px;
-}
-
-.messages {
-    background-color: #fffde7; /* Açıq sarı fon */
-    border-left: 5px solid #ffcc80; /* Narıncı kənar */
-    padding: 20px 25px;
-    margin-bottom: 40px;
-    border-radius: 10px;
-}
-
-.messages h3 {
-    color: #f57c00; /* Tünd narıncı */
-    margin-top: 0;
-    font-size: 1.8em;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.messages ul {
-    list-style: none;
-    padding: 0;
-    text-align: center;
-}
-
-.messages li {
-    background-color: #ffe0b2; /* Açıq narıncı */
-    margin: 10px 0;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-size: 1.1em;
-    color: #444;
-    transition: transform 0.2s ease, background-color 0.2s ease;
-}
-
-.messages li:hover {
-    transform: translateX(5px);
-    background-color: #ffcc80;
-}
-
-.special-message {
-    text-align: center;
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #e91e63;
-    background-color: #f8bbd0; /* Açıq çəhrayı fon */
-    padding: 25px;
-    border-radius: 10px;
-    margin-bottom: 40px;
-    box-shadow: 0 5px 10px rgba(0,0,0,0.08);
-}
-
-footer {
-    text-align: center;
-    padding-top: 20px;
-    border-top: 2px solid #ff80ab;
-    color: #777;
-    font-size: 0.9em;
-}
-
-/* Responsivlik üçün */
-@media (max-width: 768px) {
-    .container {
-        margin: 20px auto;
-        padding: 20px;
-    }
-
-    header h1 {
-        font-size: 2.5em;
-    }
-
-    header h2 {
-        font-size: 1.2em;
-    }
-
-    .hero {
-        flex-direction: column;
-    }
-
-    .image-placeholder {
-        width: 200px;
-        height: 200px;
-    }
-
-    .hero p {
-        font-size: 1em;
-    }
-
-    .messages h3 {
-        font-size: 1.5em;
-    }
-}
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); width: 280px; }
+            .sidebar.active { transform: translateX(0); box-shadow: 10px 0 30px rgba(0,0,0,0.1); }
+            .menu-toggle { display: block; }
+            #chat-window { padding: 80px 15px 100px 15px; }
+        }
+        .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 999; }
+        .overlay.active { display: block; }
     </style>
-
 </head>
-
 <body>
-    <div class="container">
-        <header>
-            <h1>Mənim Sevgili Anam!</h1>
-            <h2>8 Mart Beynəlxalq Qadınlar Günün Mübarək!</h2>
-        </header>
-        <main>
-            <section class="hero">
-                <div class="image-placeholder">
-                    <img src="https://uploads.onecompiler.io/43d7y9waz/3x2zp2yd7/imageaa.jpg" alt="Sevgili Anam" id="anaSekli">
-                </div>
-                <p>Həyatımın ən dəyərli varlığı, ilk müəllimim, ən böyük dəstəkçim... Anacan, səninlə hər günüm bayram kimidir. Hər zaman yanımda olduğun, mənə yol göstərdiyin və sonsuz sevginlə qəlbimi isitdiyin üçün sənə minnətdaram. Sənin kimi bir anaya sahib olduğum üçün çox şanslıyam.</p>
-            </section>
 
-            <section class="messages">
-                <h3>Sənə olan sevgim sonsuzdur!</h3>
-                <ul>
-                    <li>Hər zaman gülümsə, çünki sənin gülüşün dünyaya işıq saçır.</li>
-                    <li>Sən mənim qəhrəmanımsan!</li>
-                    <li>Nə yaxşı ki, varsan, Anam!</li>
-                    <li>Səninlə keçən hər anım dəyərlidir.</li>
-                </ul>
-            </section>
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-            <section class="special-message">
-                <p>Bu gün sənin günündür, Anacan! Bütün qadınlarımızın 8 Mart bayramı mübarək olsun! Həyatınız sevgi, xoşbəxtlik və sülhlə dolu olsun!</p>
-            </section>
-        </main>
-        <footer>
-            <p>&copy; <span id="currentYear"></span> Sevgi ilə, övladın.</p>
-        </footer>
-    </div>
+    <aside class="sidebar" id="sidebar">
+        <button class="new-chat" onclick="newChat(); closeSidebarIfMobile();">+ New Chat</button>
+        <div class="history" id="history-list"></div>
+        <div class="user-section" id="user-section">
+            <button class="login-btn" onclick="loginWithGoogle()">Gmail ilə daxil ol</button>
+        </div>
+    </aside>
 
-    <script src="script.js">document.addEventListener('DOMContentLoaded', function() {
-    // Cari ili avtomatik olaraq footer-a əlavə edir
-    const currentYearSpan = document.getElementById('currentYear');
-    currentYearSpan.textContent = new Date().getFullYear();
+    <main class="main">
+        <div id="start-screen">
+            <h1 id="welcome-msg" style="font-size: 32px;">Nə kömək edə bilərəm?</h1>
+            <p style="color: #888; margin-top: 10px;">Söhbətə başlamaq üçün aşağıya yazın.</p>
+        </div>
+        <div id="chat-window"></div>
+        <div class="input-area">
+            <div class="input-box">
+                <input type="text" id="user-in" placeholder="Groq-a mesaj yazın...">
+                <button class="send-btn" onclick="handleSend()">↑</button>
+            </div>
+        </div>
+    </main>
 
-    // Şəkil yüklənmədikdə və ya tapılmadıqda alternativ mətn göstərmək üçün
-    const anaSekli = document.getElementById('anaSekli');
-    anaSekli.onerror = function() {
-        console.log("Ana şəkli tapılmadı, lütfən 'ana-sekli.jpg' adında bir şəkil əlavə edin.");
-        // Alternativ olaraq bir placeholder göstərə bilərik
-        // anaSekli.src = "placeholder.jpg";
-    };
-});</script>
+    <script>
+        // --- AYARLAR ---
+        const GROQ_KEY = "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";
+        const firebaseConfig = {
+            apiKey: "API_KEY",
+            authDomain: "DOMAIN.firebaseapp.com",
+            projectId: "ID",
+            storageBucket: "ID.appspot.com",
+            messagingSenderId: "SENDER_ID",
+            appId: "APP_ID"
+        };
+        // ---------------
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        let currentUser = null;
+        let currentChatId = null;
+
+        function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).then(res => {
+                currentUser = res.user;
+                updateUI();
+            }).catch(err => alert("Giriş alınmadı: " + err.message));
+        }
+
+        function updateUI() {
+            if (currentUser) {
+                document.getElementById('user-section').innerHTML = `
+                    <div class="profile-info">
+                        <img src="${currentUser.photoURL}">
+                        <div><b>${currentUser.displayName}</b><br><span style="color:red; cursor:pointer; font-size:11px" onclick="auth.signOut().then(()=>location.reload())">Çıxış et</span></div>
+                    </div>`;
+                document.getElementById('welcome-msg').innerText = `Xoş gəldin, ${currentUser.displayName.split(' ')[0]}!`;
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function closeSidebarIfMobile() {
+            if (window.innerWidth <= 768) toggleSidebar();
+        }
+
+        function loadHistory() {
+            const h = JSON.parse(localStorage.getItem('groq_final_db') || '{}');
+            const list = document.getElementById('history-list');
+            list.innerHTML = "";
+            Object.keys(h).reverse().forEach(id => {
+                const item = document.createElement('div');
+                item.className = "history-item";
+                item.innerText = h[id][0].content.substring(0, 25) + "...";
+                item.onclick = () => { openChat(id); closeSidebarIfMobile(); };
+                list.appendChild(item);
+            });
+        }
+
+        function openChat(id) {
+            currentChatId = id;
+            const h = JSON.parse(localStorage.getItem('groq_final_db') || '{}');
+            document.getElementById('start-screen').style.display = "none";
+            const win = document.getElementById('chat-window');
+            win.style.display = "flex"; win.innerHTML = "";
+            h[id].forEach(m => renderMessage(m.content, m.role));
+        }
+
+        function renderMessage(text, role) {
+            const win = document.getElementById('chat-window');
+            const wordCount = text.split(/\s+/).length;
+            let displayTxt = text;
+            let upgradeBox = "";
+
+            if (role === 'assistant' && wordCount > 40) {
+                displayTxt = text.split(/\s+/).slice(0, 40).join(" ") + "...";
+                upgradeBox = `<div class="upgrade-card"><p><b>Limit keçildi (40 söz).</b></p><button class="upgrade-btn">Upgrade to Pro</button></div>`;
+            }
+
+            win.innerHTML += `
+                <div class="msg">
+                    <div class="avatar ${role === 'user' ? 'u-av' : 'b-av'}">${role === 'user' ? 'U' : 'G'}</div>
+                    <div class="txt"><b>${role === 'user' ? 'Sən' : 'Groq AI'}</b><br>${displayTxt}${upgradeBox}</div>
+                </div>`;
+            win.scrollTop = win.scrollHeight;
+        }
+
+        async function handleSend() {
+            const inp = document.getElementById('user-in');
+            const val = inp.value.trim();
+            if (!val) return;
+
+            if (!currentChatId) currentChatId = "chat_" + Date.now();
+            document.getElementById('start-screen').style.display = "none";
+            document.getElementById('chat-window').style.display = "flex";
+
+            renderMessage(val, 'user');
+            inp.value = "";
+
+            const h = JSON.parse(localStorage.getItem('groq_final_db') || '{}');
+            const context = h[currentChatId] || [];
+
+            try {
+                const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        model: "llama-3.3-70b-versatile",
+                        messages: [{role: "system", content: "Səmimi Azərbaycan dilində cavab verən asistansan."}, ...context, {role: "user", content: val}]
+                    })
+                });
+                const data = await res.json();
+                const reply = data.choices[0].message.content;
+                renderMessage(reply, 'assistant');
+                
+                const db = JSON.parse(localStorage.getItem('groq_final_db') || '{}');
+                if (!db[currentChatId]) db[currentChatId] = [];
+                db[currentChatId].push({role: 'user', content: val}, {role: 'assistant', content: reply});
+                localStorage.setItem('groq_final_db', JSON.stringify(db));
+                loadHistory();
+            } catch (e) { renderMessage("Xəta: API bağlantısı kəsildi.", 'assistant'); }
+        }
+
+        auth.onAuthStateChanged(user => { if(user) { currentUser = user; updateUI(); } });
+        document.getElementById('user-in').onkeypress = (e) => { if(e.key === 'Enter') handleSend(); };
+        loadHistory();
+    </script>
 </body>
 </html>
